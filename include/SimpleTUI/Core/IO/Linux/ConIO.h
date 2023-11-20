@@ -19,6 +19,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <AppBook/Util/Object.h>
+#include <AppBook/Util/Geometry.h>
 #include <AppBook/Book/AppBook.h>
 #include "IOListener.h"
 
@@ -47,6 +48,9 @@ namespace Tui::IO
  */
 class STUI_EXPORT ConIO : public Util::Object
 {
+
+
+    Dim WH;
     // ------------- io thread -------------------------
     // delegate/slot:
     std::mutex inmtx{};

@@ -21,10 +21,10 @@ add_library(
     include/SimpleTUI/Core/IO/Linux/IOListener.h            Impl/Core/IO/Linux/IOListener.cxx
     include/SimpleTUI/Core/IO/Linux/ConIO.h                 Impl/Core/IO/Linux/ConIO.cxx
     include/SimpleTUI/Core/IO/Linux/TCPSocket.h             Impl/Core/IO/Linux/TCPSocket.cxx
-    include/SimpleTUI/Core/IO/Linux/KeyData.h
-    Impl/Core/IO/Linux/KeyData.cxx
-    #Test/DevTest.cxx
-    #Test/DevTest.h
+    include/SimpleTUI/Core/IO/Linux/KeyData.h               Impl/Core/IO/Linux/KeyData.cxx
+    include/SimpleTUI/Core/DisplayMem.h                     Impl/Core/DisplayMem.cxx
+    include/SimpleTUI/Core/StUIDefinitions.h                Impl/Core/StUIDefinitions.cxx
+    include/SimpleTUI/Ui/UiControl.h                        Impl/Ui/UiControl.cxx
 
 )
 
