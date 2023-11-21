@@ -234,7 +234,7 @@ Book::Result DisplayMem::Resize(Dim DWH)
 /*!
  * @brief Renders at the screen
  * @return
- * @note Compute/Update the Visible Area within the exposed subregion
+ * @note Compute/Update the Visible Dimensions within the exposed subregion
  */
 Book::Result DisplayMem::Render(Rect R)
 {
@@ -245,7 +245,7 @@ Book::Result DisplayMem::Render(Rect R)
         return Book::Result::Accepted;
     }
 
-    Rect A = Rect{{0,0}, Area} & R;
+    Rect A = Rect{{0,0}, Dimensions} & R;
     if(!A)
         return Book::Result::Rejected;
 
@@ -261,17 +261,17 @@ Book::Result DisplayMem::Render()
 Book::Result DisplayMem::Allocate()
 {
 
-    if(!Area)
+    if(!Dimensions)
         throw AppBook::Exception()[ AppBook::Fatal() << " Attempt to 'Allocate' Display Memory Bloc with unset dimensions"];
 
     Lines.clear();
-    Lines.resize(Area.H);
+    Lines.resize(Dimensions.H);
     Color::Pair  ECP = Colors[State::Normal];
     Char Ch{ECP};
     Ch << (char)0x20;
     for(auto& L : Lines)
     {
-        L.resize(Area.W,Ch);
+        L.resize(Dimensions.W, Ch);
         //std::fill(L.begin(), L.end(), Ch);
     }
     return Book::Result::Accepted;
@@ -293,6 +293,12 @@ void DisplayMem::AssignColors()
 {
     Colors = ColorDB::ColorDBData["default"]["ControlBase"];
 }
+
+Rect DisplayMem::Geometry()
+{
+    return {Location, Dimensions};
+}
+
 
 
 DisplayMem::Char &DisplayMem::Char::operator=(char c)
@@ -410,6 +416,95 @@ DisplayMem::Char::Char(Color::Pair P)
 {
     SetFG(P.Fg);
     SetBG(P.Bg);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+DisplayMem *DisplayMem::Copy(Rect R)
+{
+
+    if(!R) return Dup(); // Complete memory bloc copy requested...
+
+    StrAcc Acc = "Copy Operation from %s; Requested Bloc Dimensions:%s";
+    Acc << Id() << R;
+    Rect In = Geometry();
+
+    R = R ? In/R : In;
+
+    if(!R)
+    {
+        AppBook::Info() << Book::Result::Rejected << Acc << " - " << (std::string)R;
+        return nullptr;
+    }
+
+    auto* D = new DisplayMem(nullptr, Acc());
+    D->SetDefaultColors(Colors[State::Normal]);
+    D->Resize(R.Dwh);
+    D->Colors = Colors;
+    D->Location = R.A; // Very, very, very Important!!!
+    // ------------- Begin Copy : Line-by-Line
+    int Y = 0;
+    Point Src{R.A};
+    auto W = R.Width();
+    while(Y < R.Height())
+    {
+        std::copy(Lines[Src.Y+Y].begin()+Src.X , Lines[Src.Y+Y].begin()+Src.X+W, D->Lines[Y].begin());
+    }
+
+    return D;
+}
+
+Book::Result DisplayMem::Blit(DisplayMem *Bloc)
+{
+
+    if((Bloc->Dimensions == Dimensions) && (Bloc->Location == Point(0, 0)))
+    {
+        Lines = Bloc->Lines;
+        return Book::Result ::Accepted;
+    }
+
+    Rect In = Geometry();
+    Rect Src = Bloc->Geometry()+Bloc->Location; // By default, Original Source Location is Set. Must Set otherwise before, if Move to other location is wanted.
+
+    In = In / Src;
+    if(!In)
+    {
+        AppBook::Info() << Book::Result::Oob << Bloc->Id() << " - " << Book::Result::Rejected << (std::string)(Bloc->Geometry()+Bloc->Location);
+        return Book::Result::Oob;
+    }
+
+
+    return Book::Result::Ok;
+}
+
+DisplayMem *DisplayMem::Dup()
+{
+    StrAcc Acc = "Copy Operation from %s";
+    Acc << Id();
+    auto* D = new DisplayMem(nullptr, Acc());
+    D->Lines = Lines; // Recall to thread-mutex this operation!!!
+    D->Colors= Colors;
+
+}
+
+/*!
+ * @brief
+ * @param Bloc
+ * @Note Let me tell you that if std::vector of Char works, then just WOW!!!
+ */
+void DisplayMem::BlitDup(DisplayMem *Bloc)
+{
+    // As simple as that:
+    Lines = Bloc->Lines; // Deep copy, that's it! lol!
 }
 
 
