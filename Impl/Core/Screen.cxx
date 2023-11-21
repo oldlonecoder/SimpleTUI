@@ -64,7 +64,7 @@ Book::Result Screen::Init()
 
 
     Allocate(Area);
-
+    Clear({});
     return Book::Result::Ok;
 }
 
@@ -77,6 +77,25 @@ std::size_t Screen::DoUpdates()
 {
     if(UpdatesQueu.empty())
         return 0;
+
+    for(auto &U : UpdatesQueu)
+    {
+
+    }
+}
+
+Screen& Screen::GotoXY(Point Pt)
+{
+    if(!Rect({},Area)[Pt])
+    {
+        AppBook::Error() << Book::Result::Rejected << " coord '" << Pt << "' is out of console's geometry.";
+        return *this;
+    }
+
+    std::cout << "\x1b[" << Pt.Y + 1 << ';' << Pt.X + 1 << 'H';
+    fflush(stdout);
+    CursorPos = Pt;
+    return *this;
 }
 
 

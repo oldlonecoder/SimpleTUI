@@ -26,8 +26,18 @@
 namespace Tui
 {
 
+
+
+/*!
+ * @brief this is the Console Visual Control.
+ *
+ * All "UiControls" including TopLevel [floating] Controls (aka Windows) are children of this instance of Screen.
+ */
 class STUI_EXPORT Screen : public DisplayMem
 {
+
+    Point CursorPos{};
+
 
     using ScreenArrayT = std::map<std::string, Screen*>;
     static ScreenArrayT ScreenArray;
@@ -36,14 +46,12 @@ class STUI_EXPORT Screen : public DisplayMem
     {
         DisplayMem* D{nullptr};
         Rect        R;
-        using Queu = std::stack<UpdateNode>;
+        using Queu = std::vector<UpdateNode>;
         //...
     };
 
     Screen::UpdateNode::Queu UpdatesQueu;
-
     std::size_t DoUpdates();
-
 
 public:
 
@@ -55,6 +63,7 @@ public:
 
     static Screen& GetScreen(const std::string& ScrID);
 
+    Screen& GotoXY(Point Pt);
 
 
 };

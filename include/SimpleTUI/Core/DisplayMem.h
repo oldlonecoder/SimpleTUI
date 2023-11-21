@@ -117,6 +117,8 @@ public:
 
 protected:
 
+    State::Type VisualState{State::Normal};
+
     virtual Book::Result Render(Rect R);
     virtual Book::Result Allocate(Dim DXY);
     virtual Book::Result Render();
