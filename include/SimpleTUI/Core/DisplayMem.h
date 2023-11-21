@@ -90,16 +90,16 @@ public:
 
 
 
-        Color::Code Fg() const;
-        Color::Code Bg() const;
+        [[nodiscard]] Color::Code Fg() const;
+        [[nodiscard]] Color::Code Bg() const;
 
         [[maybe_unused]] Color::Pair Colors();
-        Utf::Glyph::Type IconID() const;
-        Utf::AccentFR::Type AccentID() const;
-        uint8_t Ascii() const;
+        [[nodiscard]] Utf::Glyph::Type IconID() const;
+        [[nodiscard]] Utf::AccentFR::Type AccentID() const;
+        [[nodiscard]] char Ascii() const;
 
         DisplayMem::Char::Type& operator*() { return C; }
-        DisplayMem::Char::Type Attributes() const;
+        [[nodiscard]] DisplayMem::Char::Type Attributes() const;
 
         DisplayMem::Char& operator << (Utf::Glyph::Type IC);
         DisplayMem::Char& operator << (Utf::AccentFR::Type A);
