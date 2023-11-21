@@ -33,7 +33,7 @@ namespace Tui
  *
  * All "UiControls" including TopLevel [floating] Controls (aka Windows) are children of this instance of Screen.
  */
-class STUI_EXPORT Screen : public DisplayMem
+class STUI_EXPORT Screen : protected DisplayMem
 {
 
     Point CursorPos{};
