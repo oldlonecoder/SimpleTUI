@@ -36,9 +36,12 @@ class STUI_EXPORT DisplayMem : public Object
 {
 
 protected:
-    Dim     Area{0,0,{0,500},{0,500}};
+    Dim     Dimensions{0,0,{0,500},{0,500}};
     Point   Location{};      ///< Relative or TopLevel screen coordinates
     Rect    VisibleArea{};
+
+    friend class Screen;
+    friend class UiControl;
 
 public:
     DisplayMem() = default;
@@ -114,7 +117,11 @@ public:
     };
 
     virtual Book::Result Resize(Dim DWH);
-
+    Rect Geometry();
+    void SetDefaultColors(Color::Pair P)
+    {
+        Colors[State::Normal] = P;
+    }
 protected:
 
     State::Type VisualState{State::Normal};
@@ -125,12 +132,17 @@ protected:
     virtual Book::Result Allocate();
 
     virtual void AssignColors();
+    DisplayMem* Copy(Rect R);
+    Book::Result Blit(DisplayMem* Bloc);
+    DisplayMem* Dup();
+
 
 private:
     using DisplayLine = std::vector<DisplayMem::Char>;
     using Display = std::vector<DisplayMem::DisplayLine>;
     DisplayMem::Display Lines;
     ColorDB::Components Colors;
+    void BlitDup(DisplayMem* Bloc);
 public:
 
     virtual Book::Result Clear(DisplayMem::Char Ch);
