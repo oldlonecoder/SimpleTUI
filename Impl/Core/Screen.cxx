@@ -80,7 +80,7 @@ std::size_t Screen::DoUpdates()
 
     for(auto &U : UpdatesQueu)
     {
-;
+        ;
     }
     return  0;
 }
@@ -89,7 +89,7 @@ Screen& Screen::GotoXY(Point Pt)
 {
     if(!Rect({},Area)[Pt])
     {
-        AppBook::Error() << Book::Result::Rejected << " coord '" << Pt << "' is out of console's geometry.";
+        AppBook::Error() << Book::Result::Rejected << " coord '" << Pt << "' is out of the Screen's boundaries.";
         return *this;
     }
 
