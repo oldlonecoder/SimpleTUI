@@ -59,8 +59,13 @@ Book::Action ConIO::key_in(ifd &fd)
     keyseq[fd.pksize] = 0; // Never know if keyseq[]={} does not fill with 0's...
     auto e = kbhit_notify(keyseq);
     // ...
-
+    std::string Str = keyseq;
     AppBook::Info() <<  Color::Yellow << msg << Color::Reset << "\"},";
+
+    if(auto KD = KeyData::Scan(Str.c_str()); KD.Enum != KeyData::Null)
+        AppBook::Debug() << "Key Input Details:" << Color::Yellow << KD.Name;
+    else
+        AppBook::Debug() << "No Key MetaData for :" << Color::Yellow << msg;
     return Book::Action::Continue;
 }
 
@@ -111,6 +116,8 @@ Book::Result ConIO::Start()
     auto i = io_listener.query_fd(STDIN_FILENO);
     i->read_signal.Connect(this, &ConIO::key_in);
     io_listener.idle_signal().Connect(this, &ConIO::idle);
+    kbhit_notifier.Connect(&KeyData::KeyInDelegate);
+
     AppBook::Info() << Color::DarkGreen << "starting the io loop thread :";
     io_thread = std::thread([this](){
         auto e = io_listener.run();

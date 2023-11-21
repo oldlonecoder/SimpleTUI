@@ -25,6 +25,8 @@ add_library(
     include/SimpleTUI/Core/DisplayMem.h                     Impl/Core/DisplayMem.cxx
     include/SimpleTUI/Core/StUIDefinitions.h                Impl/Core/StUIDefinitions.cxx
     include/SimpleTUI/Ui/UiControl.h                        Impl/Ui/UiControl.cxx
+    Impl/Core/Screen.cxx
+    include/SimpleTUI/Core/Screen.h
 
 )
 

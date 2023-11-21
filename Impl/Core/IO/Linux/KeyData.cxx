@@ -2,6 +2,8 @@
 // Created by oldlonecoder on 11/20/23.
 //
 
+#include <utility>
+
 #include "SimpleTUI/Core/IO/Linux/KeyData.h"
 
 
@@ -9,12 +11,14 @@
 namespace Tui::IO
 {
 
-KeyData::Data NullKey{"Null",            KeyData::Null,                          ""};
+KeyData::MetaData NullKey{"Null",            KeyData::Null,                          ""};
 
 
-std::vector<KeyData::Data> KeyData::KeyDB =
+std::vector<KeyData::MetaData> KeyData::KeyDB =
 {
     // Arrow:
+    {"Alt+Enter",       KeyData::AltEnter,                      "\x1b\x0A"},
+    {"Shift+Enter",     KeyData::ShiftEnter,                    "\x1B\x4F\x4D"},
     {"Ctrl+ArrowUp",    KeyData::ArrowUpCtrl,                   "\x1B\x5B\x31\x3B\x35\x41"},
     {"Ctrl+ArrowDown",  KeyData::ArrowDownCtrl,                 "\x1B\x5B\x31\x3B\x35\x42"},
     {"Ctrl+ArrowRight", KeyData::ArrowRightCtrl,                "\x1B\x5B\x31\x3B\x35\x43"},
@@ -33,8 +37,8 @@ std::vector<KeyData::Data> KeyData::KeyDB =
     {"Ctrl+Alt+ArrowLeft",   KeyData::ArrowLeftCtrlAlt,         "\x1B\x5B\x31\x3B\x37\x44"},
     {"ArrowUp",         KeyData::ArrowUp,                       "\x1B\x5B\x41"},
     {"ArrowDown",       KeyData::ArrowDown,                     "\x1B\x5B\x42"},
-    {"ArrowLeft",       KeyData::ArrowRight,                    "\x1B\x5B\x43"},
-    {"ArrowRight",      KeyData::ArrowLeft,                     "\x1B\x5B\x44"},
+    {"ArrowRight",      KeyData::ArrowRight,                    "\x1B\x5B\x43"},
+    {"ArrowLeft",       KeyData::ArrowLeft,                     "\x1B\x5B\x44"},
     {"Insert",          KeyData::Ins,                           "\x1B\x5B\x32\x7E"},
     {"Home",            KeyData::Home,                          "\x1B\x5B\x48"},
     {"PgUp",            KeyData::PgUp,                          "\x1B\x5B\x35\x7E"},
@@ -76,30 +80,64 @@ std::vector<KeyData::Data> KeyData::KeyDB =
     {"Shift+F9",        KeyData::ShiftF9,                       "\x1B\x5B\x32\x30\x3B\x32\x7E"},
     {"Shift+F10",       KeyData::ShiftF10,                      "\x1B\x5B\x32\x31\x3B\x32\x7E"},
     {"Shift+F11",       KeyData::ShiftF11,                      "\x1B\x5B\x32\x33\x3B\x32\x7E"},
-    {"Shift+F12",       KeyData::ShiftF12,                      "\x1B\x5B\x32\x34\x3B\x32\x7E"},
-    {"Shift+Enter",     KeyData::ShiftEnter,                    "\x1B\x4F\x4D"},
-    {"Alt+Enter",       KeyData::AltEnter,                      "\x1b\x0A"}
-
+    {"Shift+F12",       KeyData::ShiftF12,                      "\x1B\x5B\x32\x34\x3B\x32\x7E"}
 };
 
-KeyData::Data const &KeyData::Scan(uint8_t const* instr)
+KeyData::MetaData const &KeyData::Scan(const char* instr)
 {
     for(auto const& K : KeyData::KeyDB)
     {
-        const char *s = (const char*)instr;
-        if(K.Name == s) return K;
+        if(std::string(K.Seq.data()) == instr) return K;
     }
     return NullKey;
 }
 
-bool KeyData::IsMeta(const uint8_t *instr)
+bool KeyData::IsMeta(const char *instr)
 {
     return instr != nullptr && instr[0] == 0x1b;
 }
 
-bool KeyData::ESCKey(const uint8_t *instr)
+bool KeyData::ESCKey(const char *instr)
 {
     return instr != nullptr && instr[0] == 0x1b && (std::strlen((const char*)instr) == 1);
 }
+
+KeyData::KeyData(KeyData::MetaData M): M(M), Meta(1),Shift(0),Ctrl(0),Alt(0){}
+
+Book::Action KeyData::KeyInDelegate(std::string_view in)
+{
+    if(KeyData::ESCKey(in.data()))
+    {
+        // Real ESC Hit by User. It is a "Cancel/ESC/Abort/..." event.
+        KeyData K =  KeyData(in.data());
+        // Push K into the EventQeu;
+        return Book::Action::End; // Signal End to the Caller (ConIO as of now).
+    }
+    if(KeyData::IsMeta(in.data()))
+    {
+        auto M = KeyData::Scan(in.data());
+        KeyData K = KeyData(M);
+        if (K.M.Enum == KeyData::Null) {
+            // not meta
+            K.M.Enum = KeyData::Text;
+            K.M.Name = "Escaped Meta Input Key Sequence";
+            K.Seq = in;
+            K.Meta = 1;
+        }
+        /* push Key in the event queu :*/
+
+    }
+    return Book::Action::Continue;
+}
+
+KeyData::KeyData(std::string Seq):Seq(std::move(Seq)), Meta(0),Shift(0),Ctrl(0),Alt(0){}
+
+using std::string;
+
+KeyData::~KeyData()
+{
+    Seq.~string();
+}
+
 
 }

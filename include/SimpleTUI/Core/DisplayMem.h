@@ -35,7 +35,7 @@ using ::Util::Object;
 class STUI_EXPORT DisplayMem : public Object
 {
 
-
+protected:
     Dim     Area{0,0,{0,500},{0,500}};
     Point   Location{};      ///< Relative or TopLevel screen coordinates
     Rect    VisibleArea{};
@@ -83,22 +83,23 @@ public:
         DisplayMem::Char& SetFG(Color::Code FG);
         DisplayMem::Char& SetBG(Color::Code BG);
 
-        DisplayMem::Char& SetAttributes(DisplayMem::Char::Type D);
+        [[maybe_unused]] DisplayMem::Char& SetAttributes(DisplayMem::Char::Type D);
 
 
         DisplayMem::Char& SetColors(Color::Pair P);
 
 
 
-        Color::Code Fg();
-        Color::Code Bg();
-        Color::Pair Colors();
-        Utf::Glyph::Type IconID();
-        Utf::AccentFR::Type AccentID();
-        uint8_t Ascii();
+        Color::Code Fg() const;
+        Color::Code Bg() const;
+
+        [[maybe_unused]] Color::Pair Colors();
+        Utf::Glyph::Type IconID() const;
+        Utf::AccentFR::Type AccentID() const;
+        uint8_t Ascii() const;
 
         DisplayMem::Char::Type& operator*() { return C; }
-        DisplayMem::Char::Type Attributes();
+        DisplayMem::Char::Type Attributes() const;
 
         DisplayMem::Char& operator << (Utf::Glyph::Type IC);
         DisplayMem::Char& operator << (Utf::AccentFR::Type A);
@@ -112,21 +113,25 @@ public:
 
     };
 
-    Book::Result Resize(Dim DWH);
+    virtual Book::Result Resize(Dim DWH);
 
 protected:
 
-    Book::Result Render(Rect R={});
+    virtual Book::Result Render(Rect R);
+    virtual Book::Result Allocate(Dim DXY);
+    virtual Book::Result Render();
+    virtual Book::Result Allocate();
 
-    Book::Result Allocate(Dim DXY={});
-
-
+    virtual void AssignColors();
 
 private:
     using DisplayLine = std::vector<DisplayMem::Char>;
     using Display = std::vector<DisplayMem::DisplayLine>;
     DisplayMem::Display Lines;
     ColorDB::Components Colors;
+public:
+
+    virtual Book::Result Clear(DisplayMem::Char Ch);
 
 
 };

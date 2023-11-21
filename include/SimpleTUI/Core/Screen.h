@@ -2,8 +2,8 @@
 // Created by oldlonecoder on 11/20/23.
 //
 
-//#ifndef SIMPLETUI_UICONTROL_H
-//#define SIMPLETUI_UICONTROL_H
+//#ifndef SIMPLETUI_SCREEN_H
+//#define SIMPLETUI_SCREEN_H
 /******************************************************************************************
  *   Copyright (C) 1965/1987/2023 by Serge Lussier                                        *
  *   serge.lussier@oldlonecoder.club                                                      *
@@ -19,29 +19,46 @@
  ******************************************************************************************/
 
 #pragma once
-
 #include "SimpleTUI/Core/DisplayMem.h"
+#include <stack>
 
 
 namespace Tui
 {
 
-class STUI_EXPORT UiControl : public DisplayMem
+class STUI_EXPORT Screen : public DisplayMem
 {
+
+    using ScreenArrayT = std::map<std::string, Screen*>;
+    static ScreenArrayT ScreenArray;
+
+    struct UpdateNode
+    {
+        DisplayMem* D{nullptr};
+        Rect        R;
+        using Queu = std::stack<UpdateNode>;
+        //...
+    };
+
+    Screen::UpdateNode::Queu UpdatesQueu;
+
+    std::size_t DoUpdates();
+
+
 public:
-    UiControl() = default;
-    ~UiControl() override = default;
 
-    UiControl(Object* ParentObj, const std::string& ID, wclass::Type WC=wclass::Child);
+    Screen() = default;
+    explicit Screen(const std::string& ID);
+    ~Screen() override;
 
-protected:
-     Book::Result Render(Rect R) override;
-     Book::Result Allocate(Dim DXY) override;
-     Book::Result Render() override;
-     Book::Result Allocate() override;
-     void AssignColors() override;
+    Book::Result Init();
+
+    static Screen& GetScreen(const std::string& ScrID);
+
+
+
 };
 
 } // Tui
 
-//#endif //SIMPLETUI_UICONTROL_H
+//#endif //SIMPLETUI_SCREEN_H

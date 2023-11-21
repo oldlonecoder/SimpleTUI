@@ -7,6 +7,11 @@
 namespace Tui
 {
 
+
+#pragma region TileEncoding
+// -------------------------------------------------------------------------------------------
+// Copyright 2022 Arthur Sonzogni. All rights reserved.
+// Use of this source code is governed by the MIT license
 struct TileEncoding {
     uint8_t left : 2;
     uint8_t top : 2;
@@ -32,7 +37,8 @@ struct TileEncoding {
 };
 
 // clang-format off
-const std::map<std::string, TileEncoding> tile_encoding = { // NOLINT
+const std::map<std::string, TileEncoding> tile_encoding =
+    { // NOLINT
     {"─", {1, 0, 1, 0, 0}},
     {"━", {2, 0, 2, 0, 0}},
     {"╍", {2, 0, 2, 0, 0}},
@@ -175,15 +181,17 @@ const std::map<std::string, TileEncoding> tile_encoding = { // NOLINT
 };
 // clang-format on
 
+// -------------------------------------------------------------------------------------------------------------------
 
+#pragma endregion TileEncoding
 
 
 Book::Result DisplayMem::Allocate(Dim DXY)
 {
     Lines.clear();
     Lines.resize(DXY.H);
-    auto ECP = Colors[State::Normal];
-    Char Ch = ECP;
+    Color::Pair  ECP = Colors[State::Normal];
+    Char Ch{ECP};
     Ch << (char)0x20;
     for(auto& L : Lines)
     {
@@ -200,7 +208,11 @@ DisplayMem::~DisplayMem()
     Lines.clear();
 }
 
-DisplayMem::DisplayMem(Object *ParentObj, const std::string &ID) : Object(ParentObj, ID){}
+DisplayMem::DisplayMem(Object *ParentObj, const std::string &ID) : Object(ParentObj, ID)
+{
+    Colors = ColorDB::ColorDBData["default"]["ControlBase"];
+
+}
 
 
 
@@ -215,7 +227,7 @@ Book::Result DisplayMem::Resize(Dim DWH)
 {
     //...
     Allocate(DWH);
-    Render();
+    return Render();
 }
 
 
@@ -230,10 +242,58 @@ Book::Result DisplayMem::Render(Rect R)
     {
         // Render All mem.
         //...
+        return Book::Result::Accepted;
     }
+
+    Rect A = Rect{{0,0}, Area} & R;
+    if(!A)
+        return Book::Result::Rejected;
+
 
     return Book::Result::Ok;
 }
+
+Book::Result DisplayMem::Render()
+{
+    return Book::Result::Ok;
+}
+
+Book::Result DisplayMem::Allocate()
+{
+
+    if(!Area)
+        throw AppBook::Exception()[ AppBook::Fatal() << " Attempt to 'Allocate' Display Memory Bloc with unset dimensions"];
+
+    Lines.clear();
+    Lines.resize(Area.H);
+    Color::Pair  ECP = Colors[State::Normal];
+    Char Ch{ECP};
+    Ch << (char)0x20;
+    for(auto& L : Lines)
+    {
+        L.resize(Area.W,Ch);
+        //std::fill(L.begin(), L.end(), Ch);
+    }
+    return Book::Result::Accepted;
+}
+
+Book::Result DisplayMem::Clear(DisplayMem::Char Ch)
+{
+    if(Lines.empty())
+        return Book::Result::Rejected;
+
+    for(auto& L:Lines)
+    {
+        std::fill(L.begin(), L.end(), Ch);
+    }
+    return Book::Result::Accepted;
+}
+
+void DisplayMem::AssignColors()
+{
+    Colors = ColorDB::ColorDBData["default"]["ControlBase"];
+}
+
 
 DisplayMem::Char &DisplayMem::Char::operator=(char c)
 {
@@ -265,7 +325,7 @@ DisplayMem::Char &DisplayMem::Char::SetBG(Color::Code BG)
     return *this;
 }
 
-DisplayMem::Char &DisplayMem::Char::SetAttributes(DisplayMem::Char::Type D)
+[[maybe_unused]] DisplayMem::Char &DisplayMem::Char::SetAttributes(DisplayMem::Char::Type D)
 {
     C = (C & ~AttrMask) | D;
     return *this;
@@ -277,38 +337,38 @@ DisplayMem::Char &DisplayMem::Char::SetColors(Color::Pair P)
     return SetFG(P.Fg).SetBG(P.Bg);
 }
 
-Color::Code DisplayMem::Char::Fg()
+Color::Code DisplayMem::Char::Fg() const
 {
     return static_cast<Color::Code>(C & ~FGMask >> FGShift);
 }
 
-Color::Code DisplayMem::Char::Bg()
+Color::Code DisplayMem::Char::Bg() const
 {
     return static_cast<Color::Code>(C & ~BGMask >> BGShift);
 }
 
-Color::Pair DisplayMem::Char::Colors()
+[[maybe_unused]] Color::Pair DisplayMem::Char::Colors()
 {
     return Color::Pair{Fg(), Bg()};
 }
 
-Utf::Glyph::Type DisplayMem::Char::IconID()
+Utf::Glyph::Type DisplayMem::Char::IconID() const
 {
     return static_cast<Utf::Glyph::Type>(C & CharMask);
 }
 
-Utf::AccentFR::Type DisplayMem::Char::AccentID()
+Utf::AccentFR::Type DisplayMem::Char::AccentID() const
 {
     return static_cast<Utf::AccentFR::Type>(C & CharMask);
 
 }
 
-uint8_t DisplayMem::Char::Ascii()
+uint8_t DisplayMem::Char::Ascii() const
 {
     return C & CharMask;
 }
 
-DisplayMem::Char::Type DisplayMem::Char::Attributes()
+DisplayMem::Char::Type DisplayMem::Char::Attributes() const
 {
     return C & AttrMask;
 }
