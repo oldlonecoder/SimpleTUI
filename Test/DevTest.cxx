@@ -74,7 +74,7 @@ AppBook& InitBook(std::string BookName)
     Livre.Open();
     Livre.Descriptions =
         R"(
-<Icon:School; fg:Yellow>This is the development of the <fg:White>[SimpleTUI Library API]<fg/>
+<Icon:School; fg:Yellow>This is the development of the <fg:BlueViolet>[<fg:HotPink4>SimpleTUI Library API<fg:BlueViolet>]<fg/>
 --------------------------------------------------------
 )";
     AppBook::CreateSection("Devel").Open().CreateSectionContents("Log.Ansi");

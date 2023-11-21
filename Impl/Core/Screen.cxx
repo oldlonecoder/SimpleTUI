@@ -15,7 +15,7 @@
 #elif defined(__linux__)
 #   include <sys/ioctl.h>
 #   include <unistd.h>
-
+#endif
 
 
 namespace Tui
@@ -80,8 +80,9 @@ std::size_t Screen::DoUpdates()
 
     for(auto &U : UpdatesQueu)
     {
-
+;
     }
+    return  0;
 }
 
 Screen& Screen::GotoXY(Point Pt)

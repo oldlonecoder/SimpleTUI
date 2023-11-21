@@ -134,8 +134,6 @@ private:
 public:
 
     virtual Book::Result Clear(DisplayMem::Char Ch);
-
-
 };
 
 } // Tui
