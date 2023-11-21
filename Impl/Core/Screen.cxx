@@ -44,7 +44,7 @@ Book::Result Screen::Init()
 #if defined(_WIN32)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    Area = {
+    Dimensions = {
             1,1,
             {static_cast<int>(csbi.srWindow.Right - csbi.srWindow.Left + 1), static_cast<int>(csbi.srWindow.Bottom - csbi.srWindow.Top + 1)},
             {static_cast<int>(csbi.srWindow.Right - csbi.srWindow.Left + 1), static_cast<int>(csbi.srWindow.Bottom - csbi.srWindow.Top + 1)}
@@ -53,17 +53,17 @@ Book::Result Screen::Init()
 #elif defined(__linux__)
     winsize win{};
     ioctl(fileno(stdout), TIOCGWINSZ, &win);
-    Area = {
+    Dimensions = {
         static_cast<int>(win.ws_col), static_cast<int>(win.ws_row),
         {static_cast<int>(win.ws_col), static_cast<int>(win.ws_row)},{static_cast<int>(win.ws_col), static_cast<int>(win.ws_row)}
     };
 
 #endif // Windows/Linux
 
-    AppBook::Debug() << " ScreenSize: " << Color::Yellow << (std::string)Area;
+    AppBook::Debug() << " ScreenSize: " << Color::Yellow << (std::string)Dimensions;
 
 
-    Allocate(Area);
+    Allocate(Dimensions);
     Clear({});
     return Book::Result::Ok;
 }
@@ -77,17 +77,20 @@ std::size_t Screen::DoUpdates()
 {
     if(UpdatesQueu.empty())
         return 0;
-
+    auto sz = UpdatesQueu.size();
     for(auto &U : UpdatesQueu)
     {
-        ;
+        Rect R = U.R / Geometry();
+        if(!R) continue;
+        U.D->Render(R);
     }
-    return  0;
+    return  sz;
 }
+
 
 Screen& Screen::GotoXY(Point Pt)
 {
-    if(!Rect({},Area)[Pt])
+    if(!Rect({}, Dimensions)[Pt])
     {
         AppBook::Error() << Book::Result::Rejected << " coord '" << Pt << "' is out of the Screen's boundaries.";
         return *this;
