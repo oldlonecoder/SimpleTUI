@@ -363,7 +363,7 @@ Utf::AccentFR::Type DisplayMem::Char::AccentID() const
 
 }
 
-uint8_t DisplayMem::Char::Ascii() const
+char DisplayMem::Char::Ascii() const
 {
     return C & CharMask;
 }
