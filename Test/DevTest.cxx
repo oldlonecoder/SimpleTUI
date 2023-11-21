@@ -70,7 +70,7 @@ AppBook& InitBook(std::string BookName)
     //...
     std::string head;
     Book::STMLText MLText;
-
+    auto TestNullStr = StrAcc::Make(nullptr);
     Livre.Open();
     Livre.Descriptions =
         R"(
@@ -81,6 +81,7 @@ AppBook& InitBook(std::string BookName)
     MLText << Livre.Descriptions >> head;
     Livre["Devel"]["Log.Ansi"];
     AppBook::Out() << Book::Fn::Weekday << ' ' << Book::Fn::Stamp << Book::Fn::Endl << head << Book::Fn::Endl;
+    AppBook::Debug() << " Test StrAcc::Make(nullptr): " << TestNullStr().empty();
 
     return Livre;
 }

@@ -49,7 +49,6 @@ namespace Tui::IO
 class STUI_EXPORT ConIO : public Util::Object
 {
 
-
     Dim WH;
     // ------------- io thread -------------------------
     // delegate/slot:
@@ -58,9 +57,9 @@ class STUI_EXPORT ConIO : public Util::Object
 
     Book::Action key_in(ifd& fd);
     Book::Action idle();
-    termios raw;
-    termios con;
-    ConIO* _self;
+    termios raw{};
+    termios con{};
+    ConIO* _self{};
     listener io_listener{};
     Delegate<> _idle_signal{"oldcc::io idle notifier"};
     Delegate<char*> kbhit_notifier;
@@ -68,14 +67,23 @@ class STUI_EXPORT ConIO : public Util::Object
 public:
 
     ConIO();
-    ConIO(Object* parent_obj);
-    ~ConIO();
+
+    [[maybe_unused]] explicit ConIO(Object* parent_obj);
+    ~ConIO() = default;
     std::thread& thread_id() { return io_thread;}
     Book::Result Start();
     Book::Result Terminate();
     void operator()(); ///< Callable object as Set as the (std::)thread starter;
     Delegate<>& idle_notifier() { return _idle_signal; }
     Delegate<char*>& kbhit_notify(char* seq) { return kbhit_notifier; }
+
+
+    static void Clear();
+    static void GotoXY();
+    static void ToLineEnd();
+    static void ToLineStart();
+
+
 
 };
 

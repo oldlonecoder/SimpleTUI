@@ -41,6 +41,7 @@
 
 //---------------------------------------------
 #include <cstdint>
+#include <cstdlib>
 #include <thread>
 // This project depends on:
 // #include <Book.C++/Book.H>

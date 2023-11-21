@@ -29,6 +29,14 @@
 namespace Tui
 {
 
+template <class A, class B>
+std::map<B, A> InvertMap(const std::map<A, B> input) {
+    std::map<B, A> output;
+    for (const auto& it : input) {
+        output[it.second] = it.first;
+    }
+    return output;
+}
 
 using ::Util::Object;
 
@@ -140,7 +148,7 @@ protected:
 private:
     using DisplayLine = std::vector<DisplayMem::Char>;
     using Display = std::vector<DisplayMem::DisplayLine>;
-    DisplayMem::Display Lines;
+    DisplayMem::Display Grid;
     ColorDB::Components Colors;
     void BlitDup(DisplayMem* Bloc);
 public:

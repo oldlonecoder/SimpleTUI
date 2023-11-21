@@ -188,12 +188,12 @@ const std::map<std::string, TileEncoding> tile_encoding =
 
 Book::Result DisplayMem::Allocate(Dim DXY)
 {
-    Lines.clear();
-    Lines.resize(DXY.H);
+    Grid.clear();
+    Grid.resize(DXY.H);
     Color::Pair  ECP = Colors[State::Normal];
     Char Ch{ECP};
     Ch << (char)0x20;
-    for(auto& L : Lines)
+    for(auto& L : Grid)
     {
         L.resize(DXY.W);
 
@@ -205,7 +205,7 @@ Book::Result DisplayMem::Allocate(Dim DXY)
 
 DisplayMem::~DisplayMem()
 {
-    Lines.clear();
+    Grid.clear();
 }
 
 DisplayMem::DisplayMem(Object *ParentObj, const std::string &ID) : Object(ParentObj, ID)
@@ -264,12 +264,12 @@ Book::Result DisplayMem::Allocate()
     if(!Dimensions)
         throw AppBook::Exception()[ AppBook::Fatal() << " Attempt to 'Allocate' Display Memory Bloc with unset dimensions"];
 
-    Lines.clear();
-    Lines.resize(Dimensions.H);
+    Grid.clear();
+    Grid.resize(Dimensions.H);
     Color::Pair  ECP = Colors[State::Normal];
     Char Ch{ECP};
     Ch << (char)0x20;
-    for(auto& L : Lines)
+    for(auto& L : Grid)
     {
         L.resize(Dimensions.W, Ch);
         //std::fill(L.begin(), L.end(), Ch);
@@ -279,10 +279,10 @@ Book::Result DisplayMem::Allocate()
 
 Book::Result DisplayMem::Clear(DisplayMem::Char Ch)
 {
-    if(Lines.empty())
+    if(Grid.empty())
         return Book::Result::Rejected;
 
-    for(auto& L:Lines)
+    for(auto& L:Grid)
     {
         std::fill(L.begin(), L.end(), Ch);
     }
@@ -457,7 +457,7 @@ DisplayMem *DisplayMem::Copy(Rect R)
     auto W = R.Width();
     while(Y < R.Height())
     {
-        std::copy(Lines[Src.Y+Y].begin()+Src.X , Lines[Src.Y+Y].begin()+Src.X+W, D->Lines[Y].begin());
+        std::copy(Grid[Src.Y + Y].begin() + Src.X , Grid[Src.Y + Y].begin() + Src.X + W, D->Grid[Y].begin());
     }
 
     return D;
@@ -468,20 +468,25 @@ Book::Result DisplayMem::Blit(DisplayMem *Bloc)
 
     if((Bloc->Dimensions == Dimensions) && (Bloc->Location == Point(0, 0)))
     {
-        Lines = Bloc->Lines;
+        Grid = Bloc->Grid;
         return Book::Result ::Accepted;
     }
 
     Rect In = Geometry();
-    Rect Src = Bloc->Geometry()+Bloc->Location; // By default, Original Source Location is Set. Must Set otherwise before, if Move to other location is wanted.
+    Rect Src = Bloc->Geometry()+Bloc->Location;
 
-    In = In / Src;
+    In = In & Src;
     if(!In)
     {
         AppBook::Info() << Book::Result::Oob << Bloc->Id() << " - " << Book::Result::Rejected << (std::string)(Bloc->Geometry()+Bloc->Location);
         return Book::Result::Oob;
     }
 
+    int Y=0;
+    while(Y < In.Height())
+     //   std::copy()
+        auto Line = Grid[In.A.Y];
+    //...
 
     return Book::Result::Ok;
 }
@@ -491,9 +496,9 @@ DisplayMem *DisplayMem::Dup()
     StrAcc Acc = "Copy Operation from %s";
     Acc << Id();
     auto* D = new DisplayMem(nullptr, Acc());
-    D->Lines = Lines; // Recall to thread-mutex this operation!!!
+    D->Grid = Grid; // Recall to thread-mutex this operation!!!
     D->Colors= Colors;
-
+    return D;
 }
 
 /*!
@@ -504,7 +509,7 @@ DisplayMem *DisplayMem::Dup()
 void DisplayMem::BlitDup(DisplayMem *Bloc)
 {
     // As simple as that:
-    Lines = Bloc->Lines; // Deep copy, that's it! lol!
+    Grid = Bloc->Grid; // Deep copy, that's it! lol!
 }
 
 

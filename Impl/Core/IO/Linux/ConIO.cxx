@@ -76,12 +76,12 @@ Book::Action ConIO::idle()
 
 ConIO::ConIO(): Util::Object(nullptr, "ConIO") { }
 
-ConIO::ConIO(Util::Object *parent_obj): Util::Object(parent_obj, "ConIO") { }
+[[maybe_unused]] ConIO::ConIO(Util::Object *parent_obj): Util::Object(parent_obj, "ConIO") { }
 
-ConIO::~ConIO()
-{
-    //???
-}
+//ConIO::~ConIO()
+//{
+//    //???
+//}
 
 
 /*!
@@ -95,6 +95,14 @@ Book::Result ConIO::Start()
 {
     struct winsize win;
 
+    auto TermColors = StrAcc::Make(std::getenv("COLORTERM"));
+    if(!TermColors)
+        TermColors = StrAcc::Make(std::getenv("TERM"));
+
+    if((!TermColors["24bit"]) && (!TermColors["truecolor"]) && (!TermColors["256"]))
+        AppBook::Warning() << " SimpleTUI requires to be running on a minimum of UTF-8 Fonts and 256 colors or [24bits] truecolor term based terminal! ";
+
+    AppBook::Info() << " Terminal Colors Info: " << TermColors;
 
     ioctl(fileno(stdout), TIOCGWINSZ, &win);
     tcgetattr(STDIN_FILENO, &con);
@@ -136,6 +144,30 @@ Book::Result ConIO::Terminate()
     return Book::Result::Ok;
 }
 
+void ConIO::operator()()
+{
+
+}
+
+void ConIO::Clear()
+{
+    std::cout << "\x1b[2K" << std::flush;
+}
+
+void ConIO::GotoXY()
+{
+
+}
+
+void ConIO::ToLineEnd()
+{
+
+}
+
+void ConIO::ToLineStart()
+{
+    std::cout << "\r" << std::flush;
+}
 
 
 }
