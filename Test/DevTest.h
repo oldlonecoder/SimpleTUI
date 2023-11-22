@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "SimpleTUI/Core/IO/Linux/ConIO.h"
+#include "SimpleTUI/Core/Screen.h"
 
 
 
@@ -30,7 +30,7 @@ namespace Tui::Test
 class DevTest : public Util::Object
 {
 
-    Tui::IO::ConIO ConIO;
+
 
 public:
     DevTest(std::string ID);

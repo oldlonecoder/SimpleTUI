@@ -20,6 +20,12 @@
 
 #pragma once
 #include "SimpleTUI/Core/DisplayMem.h"
+#if defined(_MSC_VER) || defined(WIN64) || defined(_WIN64) || defined(__WIN64__) || defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#error   This version is early devel and only on Linux for now.
+//#include "windows"
+#elif defined(__linux__)
+#include "SimpleTUI/Core/IO/Linux/ConIO.h"
+#endif
 #include <stack>
 
 
@@ -37,6 +43,7 @@ class STUI_EXPORT Screen : protected DisplayMem
 {
 
     Point CursorPos{};
+    IO::ConIO ConIO;
 
 
     using ScreenArrayT = std::map<std::string, Screen*>;
@@ -55,15 +62,23 @@ class STUI_EXPORT Screen : protected DisplayMem
 
 public:
 
+    using String = std::vector<DisplayMem::Char>;
+
     Screen() = default;
     explicit Screen(const std::string& ID);
     ~Screen() override;
 
-    Book::Result Init();
+    Screen& Create(std::string ScreenName);
 
+    Book::Result Setup();
     static Screen& GetScreen(const std::string& ScrID);
 
     Screen& GotoXY(Point Pt);
+
+    [[maybe_unused]] static void EndStr(Screen::String& Str);
+    Book::Result Update(Rect SubRect);
+    Book::Result Update(DisplayMem* Dm, Rect SubRect);
+
 
 
 };

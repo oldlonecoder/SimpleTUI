@@ -102,7 +102,7 @@ Book::Result ConIO::Start()
     if((!TermColors["24bit"]) && (!TermColors["truecolor"]) && (!TermColors["256"]))
         AppBook::Warning() << " SimpleTUI requires to be running on a minimum of UTF-8 Fonts and 256 colors or [24bits] truecolor term based terminal! ";
 
-    AppBook::Info() << " Terminal Colors Info: " << TermColors;
+    AppBook::Info() << " Terminal colors from ENV: " << TermColors;
 
     ioctl(fileno(stdout), TIOCGWINSZ, &win);
     tcgetattr(STDIN_FILENO, &con);
@@ -119,6 +119,28 @@ Book::Result ConIO::Start()
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
         //... To be continued
 
+#if defined(_WIN32)
+    #error   This version is early devel and only on Linux for now.
+//    CONSOLE_SCREEN_BUFFER_INFO csbi;
+//    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+//    Dimensions = {
+//            1,1,
+//            {static_cast<int>(csbi.srWindow.Right - csbi.srWindow.Left + 1), static_cast<int>(csbi.srWindow.Bottom - csbi.srWindow.Top + 1)},
+//            {static_cast<int>(csbi.srWindow.Right - csbi.srWindow.Left + 1), static_cast<int>(csbi.srWindow.Bottom - csbi.srWindow.Top + 1)}
+//    };
+
+#elif defined(__linux__)
+    winsize win{};
+    ioctl(fileno(stdout), TIOCGWINSZ, &win);
+    WH = {
+        static_cast<int>(win.ws_col), static_cast<int>(win.ws_row),
+        {static_cast<int>(win.ws_col), static_cast<int>(win.ws_row)},{static_cast<int>(win.ws_col), static_cast<int>(win.ws_row)}
+    };
+
+#else  // Linux
+#error This version is early devel and only on Linux for now.
+#endif
+
     io_listener = listener(this, 1000);
     (void)io_listener.add_ifd(STDIN_FILENO, ifd::O_READ| ifd::I_AUTOFILL);
     auto i = io_listener.query_fd(STDIN_FILENO);
@@ -133,7 +155,6 @@ Book::Result ConIO::Start()
 
         // ...
     });
-    io_thread.join(); // Bloc Here for now.
 
     return Book::Result::Ok;
 }

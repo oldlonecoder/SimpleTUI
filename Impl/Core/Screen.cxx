@@ -15,6 +15,8 @@
 #elif defined(__linux__)
 #   include <sys/ioctl.h>
 #   include <unistd.h>
+#   include <termios.h>
+
 #endif
 
 
@@ -38,35 +40,21 @@ Screen::~Screen()
 
 }
 
-Book::Result Screen::Init()
+Book::Result Screen::Setup()
 {
 
-#if defined(_WIN32)
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    Dimensions = {
-            1,1,
-            {static_cast<int>(csbi.srWindow.Right - csbi.srWindow.Left + 1), static_cast<int>(csbi.srWindow.Bottom - csbi.srWindow.Top + 1)},
-            {static_cast<int>(csbi.srWindow.Right - csbi.srWindow.Left + 1), static_cast<int>(csbi.srWindow.Bottom - csbi.srWindow.Top + 1)}
-    };
-
-#elif defined(__linux__)
-    winsize win{};
-    ioctl(fileno(stdout), TIOCGWINSZ, &win);
-    Dimensions = {
-        static_cast<int>(win.ws_col), static_cast<int>(win.ws_row),
-        {static_cast<int>(win.ws_col), static_cast<int>(win.ws_row)},{static_cast<int>(win.ws_col), static_cast<int>(win.ws_row)}
-    };
-
-#endif // Windows/Linux
 
     AppBook::Debug() << " ScreenSize: " << Color::Yellow << (std::string)Dimensions;
+    ConIO.Start(); // IO Loop Started in its own thread ...
+    /// --- Returns immediately.
 
 
     Allocate(Dimensions);
     Clear({});
     return Book::Result::Ok;
 }
+
+
 
 Screen &Screen::GetScreen(const std::string &ScrID)
 {
@@ -100,6 +88,28 @@ Screen& Screen::GotoXY(Point Pt)
     fflush(stdout);
     CursorPos = Pt;
     return *this;
+}
+
+[[maybe_unused]] void Screen::EndStr(Screen::String &Str)
+{
+    Str.emplace_back((char)0);
+}
+
+Screen &Screen::Create(std::string ScreenName)
+{
+    Screen::ScreenArray[ScreenName] = new Screen(ScreenName);
+    return *Screen::ScreenArray[ScreenName];
+}
+
+
+Book::Result Screen::Update(Rect SubRect)
+{
+    return Book::Result::Ok;
+}
+
+Book::Result Screen::Update(DisplayMem *Dm, Rect SubRect)
+{
+    return Book::Result::Ok;
 }
 
 
