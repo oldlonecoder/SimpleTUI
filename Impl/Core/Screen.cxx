@@ -42,12 +42,9 @@ Screen::~Screen()
 
 Book::Result Screen::Setup()
 {
-
-
     AppBook::Debug() << " ScreenSize: " << Color::Yellow << (std::string)Dimensions;
     ConIO.Start(); // IO Loop Started in its own thread ...
     /// --- Returns immediately.
-
 
     Allocate(Dimensions);
     Clear({});
