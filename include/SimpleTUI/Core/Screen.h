@@ -43,8 +43,9 @@ class STUI_EXPORT Screen : protected DisplayMem
 {
 
     Point CursorPos{};
+#if defined(__linux__)
     IO::ConIO ConIO;
-
+#endif
 
     using ScreenArrayT = std::map<std::string, Screen*>;
     static ScreenArrayT ScreenArray;
