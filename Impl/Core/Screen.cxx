@@ -81,18 +81,20 @@ Screen& Screen::GotoXY(Point Pt)
         return *this;
     }
 
-    std::cout << "\x1b[" << Pt.Y + 1 << ';' << Pt.X + 1 << 'H';
+
     fflush(stdout);
     CursorPos = Pt;
+    IO::ConIO::GotoXY(CursorPos);
     return *this;
 }
+
 
 [[maybe_unused]] void Screen::EndStr(Screen::String &Str)
 {
     Str.emplace_back((char)0);
 }
 
-Screen &Screen::Create(std::string ScreenName)
+Screen &Screen::Create(const std::string& ScreenName)
 {
     Screen::ScreenArray[ScreenName] = new Screen(ScreenName);
     return *Screen::ScreenArray[ScreenName];
@@ -101,12 +103,12 @@ Screen &Screen::Create(std::string ScreenName)
 
 Book::Result Screen::Update(Rect SubRect)
 {
-    return Book::Result::Ok;
+    return Book::Result::Notimplemented;
 }
 
 Book::Result Screen::Update(DisplayMem *Dm, Rect SubRect)
 {
-    return Book::Result::Ok;
+    return Book::Result::Notimplemented;
 }
 
 

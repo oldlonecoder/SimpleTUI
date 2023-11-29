@@ -14,9 +14,20 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include "SimpleTUI/Core/Screen.h"
 
 namespace Tui::IO
 {
+
+
+
+
+ConIO* ConIOInstance = nullptr;
+
+
+
+
+
 
 /*!
  * \brief ConIO::key_in read the console input buffer in raw mode.
@@ -74,9 +85,8 @@ Book::Action ConIO::idle()
     return _idle_signal();
 }
 
-ConIO::ConIO(): Util::Object(nullptr, "ConIO") { }
 
-[[maybe_unused]] ConIO::ConIO(Util::Object *parent_obj): Util::Object(parent_obj, "ConIO") { }
+[[maybe_unused]] ConIO::ConIO(Util::Object *parent_obj, const std::string& cid): Util::Object(parent_obj, cid) { }
 
 //ConIO::~ConIO()
 //{
@@ -162,6 +172,7 @@ Book::Result ConIO::Start()
 Book::Result ConIO::Terminate()
 {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &con);
+    RestoreScreen();
     return Book::Result::Ok;
 }
 
@@ -170,14 +181,15 @@ void ConIO::operator()()
 
 }
 
+
 void ConIO::Clear()
 {
     std::cout << "\x1b[2K" << std::flush;
 }
 
-void ConIO::GotoXY()
+void ConIO::GotoXY(Point Pt)
 {
-
+    std::cout << "\033[" << Pt.Y + 1 << ';' << Pt.X + 1 << 'H' << std::flush;
 }
 
 void ConIO::ToLineEnd()
@@ -185,9 +197,51 @@ void ConIO::ToLineEnd()
 
 }
 
+
 void ConIO::ToLineStart()
 {
     std::cout << "\r" << std::flush;
+}
+
+void ConIO::Underline(bool On)
+{
+    std::string Str = On ? "\x1B[4m" : "\x1B[24m";
+    std::cout << Str << std::flush;
+}
+
+void ConIO::DoubleUnderline(bool On)
+{
+    std::string Str = On ? "\x1B[21m" : "\x1B[24m";
+    std::cout << Str << std::flush;
+}
+
+
+
+void ConIO::RestoreScreen()
+{
+    std::cout << "\x1b[?47l\x1b[0m\x1b[?1049l\x1b[u" << std::flush;
+}
+
+void ConIO::SaveScreen()
+{
+    std::cout << "\x1b[s\x1b[?47h\x1b[0m\x1b[?1049h" << std::flush;
+}
+
+ConIO &ConIO::Instance()
+{
+    if(!ConIOInstance)
+        throw AppBook::Exception()[ AppBook::Fatal() << "ConIO has no instance yet. Contruct by using IO::ConIO::Construct( Object* ParentObj,. const std::string& ConsoleID"];
+
+    return *ConIOInstance;
+}
+
+ConIO &ConIO::Construct(Object *ParentObj, const std::string &ConID)
+{
+    if(ConIOInstance)
+        return *ConIOInstance;
+
+    ConIOInstance = new ConIO(ParentObj, ConID);
+    return *ConIOInstance;
 }
 
 

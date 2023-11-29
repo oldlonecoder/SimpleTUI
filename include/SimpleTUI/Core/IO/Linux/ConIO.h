@@ -66,10 +66,14 @@ class STUI_EXPORT ConIO : public Util::Object
 
 public:
 
+private:
     ConIO();
+    [[maybe_unused]] explicit ConIO(Object* parent_obj, const std::string& ConId);
+public:
 
-    [[maybe_unused]] explicit ConIO(Object* parent_obj);
-    ~ConIO() = default;
+    static ConIO& Construct(Object* ParentObj, const std::string& ConID);
+
+    ~ConIO() override = default;
     std::thread& thread_id() { return io_thread;}
     Book::Result Start();
     Book::Result Terminate();
@@ -79,7 +83,14 @@ public:
 
 
     static void Clear();
-    static void GotoXY();
+    static void GotoXY(Point Pt={});
+    static void Underline(bool On=true);
+    static void DoubleUnderline(bool On=true);
+    static void RestoreScreen();
+    static void SaveScreen();
+
+    static ConIO& Instance();
+
     static void ToLineEnd();
     static void ToLineStart();
 

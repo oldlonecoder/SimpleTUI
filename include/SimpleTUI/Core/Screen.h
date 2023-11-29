@@ -69,7 +69,7 @@ public:
     explicit Screen(const std::string& ID);
     ~Screen() override;
 
-    Screen& Create(std::string ScreenName);
+    Screen& Create(const std::string& ScreenName);
 
     Book::Result Setup();
     static Screen& GetScreen(const std::string& ScrID);
